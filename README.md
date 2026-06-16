@@ -1,111 +1,223 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Universal Resolver Driver: did:soul
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is a [Universal Resolver](https://github.com/decentralized-identity/universal-resolver) driver for **did:soul** identifiers.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Specifications
 
-## Description
+- [Decentralized Identifiers](https://www.w3.org/TR/did-core/)
+- [DID Method Specification](https://github.com/Soulverse-Ecosystem/did-soul-backend/tree/feat/did-kms-integration)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Example DIDs
 
-## Project setup
-
-```bash
-$ npm install
+```
+did:soul:3b56b12b-b9bc-4af1-b0b0-82ecc4b1c18b
+did:soul:aa165785-69a9-4fd0-96a4-ff0ccd592cfd
 ```
 
-## Compile and run the project
+## Build and Run (Docker)
 
 ```bash
-# development
-$ npm run start
+# Build the Docker image
+docker build -f ./Dockerfile . -t universalresolver/driver-did-soul
 
-# watch mode
-$ npm run start:dev
+# Run the container
+docker run -p 8080:8080 \
+  -e PORT=8080 \
+  -e SOULVERSE_BACKEND_ENDPOINT=https://did-stage.soulverse.us \
+  universalresolver/driver-did-soul
 
-# production mode
-$ npm run start:prod
+# Test the driver
+curl -X GET http://localhost:8080/1.0/identifiers/did:soul:<identifier>
 ```
 
-## Run with Docker
+## Build and Run (Native)
+
+**Prerequisites:** Node.js 18+
 
 ```bash
-# build image
-$ docker build -t uni-resolver-driver-did-soul .
+# Install dependencies
+npm install
 
-# run container
-$ docker run --rm -p 3000:3000 \
-  -e PORT=3000 \
-  -e SOULVERSE_BACKEND_ENDPOINT=http://host.docker.internal:8080 \
-  uni-resolver-driver-did-soul
+# Development (watch mode)
+npm run start:dev
+
+# Production
+npm run build
+npm run start:prod
 ```
 
-## Run tests
+The server starts on the port defined by the `PORT` environment variable (default: `4000`).
+
+
+## Driver Environment Variables
+
+The driver recognizes the following environment variables:
+
+| Variable | Description | Default |
+|---|---|---|
+| `PORT` | HTTP port for the driver service | `4000` |
+| `SOULVERSE_BACKEND_ENDPOINT` | Base URL of the Soulverse DID backend API | `https://did-stage.soulverse.us` |
+
+## Driver Metadata
+
+### Resolution Metadata
+
+| Field | Value |
+|---|---|
+| `contentType` | `application/did+json` |
+| `pattern` | DID must begin with `did:soul:` |
+
+### Supported Query Parameters
+
+| Parameter | Alias | Description |
+|---|---|---|
+| `version` | `versionId` | Resolve a specific version of the DID document |
+
+## Method-Specific Information
+
+The `did:soul` method is a DID method developed by the [Soulverse](https://soulverse.us) ecosystem.
+
+### Key Characteristics
+
+- **Authority:** Soulverse
+- **Resolution:** Delegates to the Soulverse backend API
+- **Versioning:** Supports historical DID document resolution via `version` / `versionId` query parameters
+- **Deactivation:** Tracks and surfaces `deactivated` status in `didDocumentMetadata`
+
+### DID Syntax
+
+```
+did:soul:<soul-specific-id>
+```
+
+Where `<soul-specific-id>` is an identifier managed by the Soulverse platform.
+
+## Resolution Endpoint
+
+The driver proxies resolution requests to:
+
+```
+GET {SOULVERSE_BACKEND_ENDPOINT}/dids/{did}
+GET {SOULVERSE_BACKEND_ENDPOINT}/dids/{did}?version={version}
+```
+
+## Architecture
+
+```
+Universal Resolver → Driver (NestJS/Node.js) → Soulverse Backend API → DID Document
+```
+
+### Source Components
+
+| File | Role |
+|---|---|
+| `src/main.ts` | Application entry point; binds NestJS app to the configured port |
+| `src/module.ts` | Root NestJS module; wires together HTTP client, config, controller, and services |
+| `src/controller/driver.controller.ts` | HTTP handler for `GET /1.0/identifiers/:did` |
+| `src/service/driver.service.ts` | Core resolution logic; validates the DID prefix and delegates to the backend |
+| `src/constant/constant.ts` | `BackendUrlService` — builds the backend URL (with optional version parameter) |
+| `src/dto/driver.dto.ts` | `ResolveDto` — typed input validation for DID and version |
+| `src/interface/interface.ts` | TypeScript interfaces for `DidResolutionResult` and `DidDocument` |
+| `src/utils/error-handling.ts` | Maps Axios HTTP errors to W3C DID error types |
+| `Dockerfile` | Container configuration for deployment |
+
+## Response Format
+
+### Successful Resolution
+
+```json
+{
+  "didDocument": {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://w3id.org/security/suites/ed25519-2020/v1"
+    ],
+    "id": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
+    "controller": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
+    "verificationMethod": [
+      {
+        "id": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd#keys-1",
+        "type": "Ed25519VerificationKey2020",
+        "controller": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
+        "publicKeyMultibase": "z6Mkp2obNZFRCF2YJat8TRH1EGc97EzMtFJTeFxkmPr4ZAvg"
+      }
+    ],
+    "authentication": [
+      "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd#keys-1"
+    ],
+    "assertionMethod": [
+      "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd#keys-1"
+    ],
+    "created": "2026-04-13T17:03:11.835Z",
+    "updated": "2026-04-13T17:03:11.835Z"
+  },
+  "didResolutionMetadata": {
+    "driverDuration": 8340,
+    "contentType": "application/did",
+    "pattern": "^(did:soul:.+)$",
+    "driverUrl": "http://driver-did-soul:8080/1.0/identifiers/$1",
+    "duration": 8367,
+    "did": {
+      "didString": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
+      "methodSpecificId": "2cabf34e-2c14-473f-ba75-0c098178d7bd",
+      "method": "soul"
+    }
+  },
+  "didDocumentMetadata": {
+    "versionId": "1",
+    "deactivated": false,
+    "updated": "2026-04-13T17:03:14.491Z"
+  }
+}
+```
+
+### Error Responses
+
+| Error | Cause |
+|---|---|
+| `invalidDid` | DID does not start with `did:soul:`, or the backend returned HTTP 400 |
+| `notFound` | DID was not found in the registry (backend returned HTTP 404) |
+| `timeout` | The backend request timed out (`ECONNABORTED` / `ETIMEDOUT`) |
+| `internalError` | Any other unexpected error |
+
+```json
+{
+  "didDocument": null,
+  "didDocumentMetadata": {},
+  "didResolutionMetadata": {
+    "error": "notFound"
+  }
+}
+```
+
+## Integration Testing
 
 ```bash
-# unit tests
-$ npm run test
+# Start the driver (native)
+npm run start:dev
 
-# e2e tests
-$ npm run test:e2e
+# Resolve a DID
+curl -X GET http://localhost:4000/1.0/identifiers/did:soul:<identifier>
 
-# test coverage
-$ npm run test:cov
+# Resolve a specific version
+curl -X GET "http://localhost:4000/1.0/identifiers/did:soul:<identifier>?version=1"
 ```
 
-## Deployment
+## Contributing
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Contributions are welcome! Please ensure:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+1. All tests pass before submitting a PR (`npm run test`)
+2. Docker image builds successfully (`docker build .`)
+3. Driver resolves example DIDs correctly
+4. Documentation is updated as needed
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Apache License 2.0
+
+## Additional Resources
+
+- [W3C DID Core Specification](https://www.w3.org/TR/did-core/)
+- [Universal Resolver](https://github.com/decentralized-identity/universal-resolver)
+- [Soulverse](https://github.com/Soulverse-Ecosystem)

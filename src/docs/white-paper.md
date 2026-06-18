@@ -17,9 +17,9 @@ This white paper presents `did:soul`, a W3C-compliant Decentralized Identifier (
 5. [Method Specification](#5-method-specification)
 6. [DID Lifecycle Operations](#6-did-lifecycle-operations)
 7. [Security Model](#7-security-model)
-8. [Use Cases](#8-use-cases)
-9. [Deployment](#9-deployment)
-9. [References](#10-references)
+8. [Deployment](#8-deployment)
+9. [Use Cases](#9-use-cases)
+10. [References](#10-references)
 
 ---
 

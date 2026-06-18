@@ -16,11 +16,11 @@ The `did:soul` method is designed to support a decentralized identity layer for 
 Key design principles of the `did:soul` method:
 
 
-- **Decentralized creation** → DIDs are created locally and pinned to IPFS without requiring a blockchain transaction or central registry.
-- **Cloud-grade key protection** → Private keys are encrypted before storage and never persisted in plaintext.
-- **Immutable history** → Every version of a DID Document is pinned to IPFS as a distinct CID, forming a cryptographically verifiable, tamper-evident audit trail.
-- **Versioned resolution** → Any historical version of a DID Document can be resolved by version number.
-- **Deactivation** → DIDs can be permanently deactivated, with resolvers returning the correct W3C deactivation metadata.
+- **Decentralized creation:** DIDs are created locally and pinned to IPFS without requiring a blockchain transaction or central registry.
+- **Cloud-grade key protection:** Private keys are encrypted before storage and never persisted in plaintext.
+- **Immutable history:** Every version of a DID Document is pinned to IPFS as a distinct CID, forming a cryptographically verifiable, tamper-evident audit trail.
+- **Versioned resolution:** Any historical version of a DID Document can be resolved by version number.
+- **Deactivation:** DIDs can be permanently deactivated, with resolvers returning the correct W3C deactivation metadata.
 
 
 ## DID Format
@@ -81,20 +81,20 @@ To create a `did:soul` DID, a client submits a `POST /dids` request with no requ
 ### Creation Steps
 
 
-1. **Identifier generation** → Generate a cryptographically secure UUID v4 and form the full DID string: `did:soul:<uuid>`.
-2. **Key pair generation** → Generate an Ed25519 key pair using a standard signing key generation algorithm.
-3. **Multibase encoding** → Convert the raw public key bytes to multibase format by prepending the `0xed01` multicodec prefix and encoding as base58btc (prefix `z`). This produces the `publicKeyMultibase` value embedded in the DID Document.
-4. **Private key encryption** → Send the private key to KMS. Store only the returned `CiphertextBlob` in the registry. The plaintext private key is discarded from memory after this step.
-5. **DID Document assembly** → Construct a W3C-compliant DID Document:
+1. **Identifier generation:** Generate a cryptographically secure UUID v4 and form the full DID string: `did:soul:<uuid>`.
+2. **Key pair generation:** Generate an Ed25519 key pair using a standard signing key generation algorithm.
+3. **Multibase encoding:** Convert the raw public key bytes to multibase format by prepending the `0xed01` multicodec prefix and encoding as base58btc (prefix `z`). This produces the `publicKeyMultibase` value embedded in the DID Document.
+4. **Private key encryption:** Send the private key to KMS. Store only the returned `CiphertextBlob` in the registry. The plaintext private key is discarded from memory after this step.
+5. **DID Document assembly:** Construct a W3C-compliant DID Document:
   - `@context` set to the W3C DID v1 and Ed25519-2020 contexts
   - `id` set to the full DID string
   - `controller` set to the DID itself (self-controlled)
   - `verificationMethod` containing the public key as `#keys-1`
   - `authentication` and `assertionMethod` both referencing `#keys-1`
   - `created` and `updated` set to the current ISO timestamp
-6. **IPFS pinning** → Upload the DID Document to IPFS. Tag the pin with `pinataMetadata` including the DID string and version number.
-7. **Registry persistence** → Write a record to the `did` table with: `did`, `currentCid`, `encryptedKey`, `version: 1`, `deactivated: false`.
-8. **History initialization** → Write the first entry to the version history with `version: 1` and the initial CID.
+6. **IPFS pinning:** Upload the DID Document to IPFS. Tag the pin with `pinataMetadata` including the DID string and version number.
+7. **Registry persistence:** Write a record to the `did` table with: `did`, `currentCid`, `encryptedKey`, `version: 1`, `deactivated: false`.
+8. **History initialization:** Write the first entry to the version history with `version: 1` and the initial CID.
 
 
 ### Example Response
@@ -140,7 +140,7 @@ To create a `did:soul` DID, a client submits a `POST /dids` request with no requ
 
 | Field | Value |
 |---|---|
-| `id` | `{did}#keys-{version}` — e.g. `did:soul:abc123#keys-1` |
+| `id` | `{did}#keys-{version}`, e.g. `did:soul:abc123#keys-1` |
 | `type` | `Ed25519VerificationKey2020` |
 | `controller` | The DID itself (self-controlled) |
 | `publicKeyMultibase` | Base58btc-encoded public key with multicodec prefix `0xed01`, prefixed with `z` |
@@ -297,14 +297,14 @@ Key rotation is a special class of DID update that replaces the active cryptogra
 
 **Version 1 (created):**
 - `verificationMethod`: `[#keys-1]`
-- `authentication`: `[#keys-1]` ← active signing key
-- `assertionMethod`: `[#keys-1]` ← credential issuance key
+- `authentication`: `[#keys-1]` - active signing key
+- `assertionMethod`: `[#keys-1]` - credential issuance key
 
 
 **Version 2 (after rotate):**
 - `verificationMethod`: `[#keys-2]`
-- `authentication`: `[#keys-2]` ← new active signing key
-- `assertionMethod`: `[#keys-1]` ← retained: credentials signed with `#keys-1` remain verifiable
+- `authentication`: `[#keys-2]` - new active signing key
+- `assertionMethod`: `[#keys-1]` - retained: credentials signed with `#keys-1` remain verifiable
 
 
 ## DID Deactivation
@@ -401,9 +401,9 @@ This temporal resolution ensures that a Verifiable Credential issued at version 
 The `proof.verificationMethod` field identifies which key was used to create the proof. In `did:soul` operations:
 
 
-- **Create operations** — No proof is required (the node creates the DID autonomously).
-- **Verifiable Credentials and Presentations** — Must reference the full DID key fragment: `did:soul:abc123#keys-1`.
-- **Future signed update/rotate operations** — Must reference the full DID key fragment of the active controller at the time of the operation.
+- **Create operations:** No proof is required (the node creates the DID autonomously).
+- **Verifiable Credentials and Presentations:** Must reference the full DID key fragment: `did:soul:abc123#keys-1`.
+- **Future signed update/rotate operations:** Must reference the full DID key fragment of the active controller at the time of the operation.
 
 
 ## Security Considerations

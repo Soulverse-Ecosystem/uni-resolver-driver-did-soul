@@ -14,18 +14,18 @@ Before discussing individual attack vectors, the overall trust model of did:soul
 
 | Asset | Description | Sensitivity |
 |---|---|---|
-| DID Document | Public key material, service endpoints, version metadata | Public — integrity critical |
-| Private Key (encrypted) | KMS-encrypted Ed25519 private key ciphertext | Secret — stored in PostgreSQL |
-| Private Key (plaintext) | Transient plaintext during generation and KMS encryption | Secret — exists only in memory briefly |
-| Registry Records | DID-to-CID mappings, version history, deactivation status | Integrity critical — source of truth |
-| Resolution Responses | DID Document + metadata returned to verifiers | Integrity critical — not currently signed |
+| DID Document | Public key material, service endpoints, version metadata | Public - integrity critical |
+| Private Key (encrypted) | KMS-encrypted Ed25519 private key ciphertext | Secret - stored in DB |
+| Private Key (plaintext) | Transient plaintext during generation and KMS encryption | Secret - exists only in memory briefly |
+| Registry Records | DID-to-CID mappings, version history, deactivation status | Integrity critical - source of truth |
+| Resolution Responses | DID Document + metadata returned to verifiers | Integrity critical - not currently signed |
 | KMS | Symmetric key used to encrypt/decrypt all private keys | |
 
 #### 1.1.2 Actors
 
 | Actor | Trust Level | Capabilities |
 |---|---|---|
-| DID Subject | Untrusted by backend | In v1, has no direct cryptographic control — relies on Soulverse |
+| DID Subject | Untrusted by backend | In v1, has no direct cryptographic control, relies on Soulverse |
 | Soulverse Backend | Trusted authority | Generates keys, encrypts/decrypts via KMS, writes to registry and IPFS, performs all mutations |
 | Soulverse Personnel | Partially trusted | DB admins, DevOps, admins have varying access to registry and KMS |
 | Verifier | Untrusted | Resolves DIDs; cannot modify state |
@@ -36,10 +36,10 @@ Before discussing individual attack vectors, the overall trust model of did:soul
 
 The did:soul v1 architecture has four trust boundaries:
 
-- **Trust boundary 1:** User Device → Soulverse Backend. The user trusts Soulverse to act faithfully on their behalf.
-- **Trust boundary 2:** Backend → The backend trusts KMS for key protection and encryption.
-- **Trust boundary 3:** Registry → IPFS. The registry CID maps to IPFS content. Registry integrity is assumed.
-- **Trust boundary 4:** Driver → Backend. The Universal Resolver driver trusts the backend response.
+- **Trust boundary 1:** User Device - Soulverse Backend. The user trusts Soulverse to act faithfully on their behalf.
+- **Trust boundary 2:** Backend - The backend trusts KMS for key protection and encryption.
+- **Trust boundary 3:** Registry - IPFS. The registry CID maps to IPFS content. Registry integrity is assumed.
+- **Trust boundary 4:** Driver - Backend. The Universal Resolver driver trusts the backend response.
 
 ---
 
@@ -49,7 +49,7 @@ The following attack types are documented with respect to the five did:soul oper
 
 #### 2.2.1 Eavesdropping
 
-All communication between the did:soul driver, the Soulverse backend API, and IPFS MUST be conducted over TLS 1.2 or higher. DID Documents contain only public key material — however transport-layer encryption is required to prevent leakage of resolution patterns, user behaviour, and service endpoint metadata.
+All communication between the did:soul driver, the Soulverse backend API, and IPFS MUST be conducted over TLS 1.2 or higher. DID Documents contain only public key material, however transport-layer encryption is required to prevent leakage of resolution patterns, user behaviour, and service endpoint metadata.
 
 - **Residual risk:** An adversary with access to TLS session metadata (timing, volume) may infer resolution activity even without decrypting payloads.
 
@@ -62,33 +62,33 @@ The v1 implementation does not include timestamps or nonces in resolution respon
 
 #### 2.2.3 Message Insertion
 
-All DID Documents are stored on IPFS as content-addressed objects. A CID uniquely identifies the exact bytes of a document — any modification produces a different CID. An attacker who inserts a modified document into IPFS will produce a different CID, which will not match the registry record.
+All DID Documents are stored on IPFS as content-addressed objects. A CID uniquely identifies the exact bytes of a document, any modification produces a different CID. An attacker who inserts a modified document into IPFS will produce a different CID, which will not match the registry record.
 
 - **Important clarification:** DID Document integrity relies on both IPFS content addressing and the integrity of the registry-maintained CID mappings. If the registry is compromised, an attacker could substitute a malicious CID that points to a valid but attacker-controlled DID Document on IPFS.
 
 #### 2.2.4 Deletion
 
-DID Documents stored on IPFS are immutable and content-addressed. However, the did:soul resolver depends on IPFS content availability — if a CID is not pinned and is garbage-collected, the associated DID Document version becomes unresolvable.
+DID Documents stored on IPFS are immutable and content-addressed. However, the did:soul resolver depends on IPFS content availability, if a CID is not pinned and is garbage-collected, the associated DID Document version becomes unresolvable.
 
 - **Mitigation:** The Soulverse infrastructure pins all DID Document CIDs. Independent resolver nodes MUST also pin CIDs for DIDs they serve.
 - **Residual risk:** If Soulverse infrastructure becomes unavailable, DID resolution would fail until the registry is restored.
 
 #### 2.2.5 Modification
 
-DID Document content integrity is enforced by IPFS content addressing. Modifications to stored documents are detectable — any change produces a new, distinct CID.
+DID Document content integrity is enforced by IPFS content addressing. Modifications to stored documents are detectable, any change produces a new, distinct CID.
 
 - **Critical gap:** The v1 implementation does not perform cryptographic signature verification on UPDATE, KEY ROTATE, or DEACTIVATE requests. These operations are gated by application-level API authentication, not by Ed25519 signature verification against the DID Document's verificationMethod.
 - **Planned mitigation:** The non-custodial architecture will require all mutating operations to be signed by the DID controller's private key held on the user's device.
 
 #### 2.2.6 Denial of Service
 
-The did:soul resolution flow traverses: Universal Resolver, did:soul driver, Soulverse backend, PostgreSQL, and IPFS. Each component is a potential denial of service target. Rate limiting MUST be implemented on the backend API. Response caching with appropriate TTLs MUST be implemented.
+The did:soul resolution flow traverses: Universal Resolver, did:soul driver, Soulverse backend, Database, and IPFS. Each component is a potential denial of service target. Rate limiting MUST be implemented on the backend API. Response caching with appropriate TTLs MUST be implemented.
 
 - **Residual risk:** The centralised registry is a single point of failure. Distributed resolver node architecture (planned, Q4 2026) will reduce this risk.
 
 #### 2.2.7 Amplification
 
-The did:soul resolution protocol does not amplify requests — a single resolution request returns a single DID Document. Implementations SHOULD reject DID Documents exceeding 64KB to prevent storage amplification.
+The did:soul resolution protocol does not amplify requests, a single resolution request returns a single DID Document. Implementations SHOULD reject DID Documents exceeding 64KB to prevent storage amplification.
 
 #### 2.2.8 Man-in-the-Middle
 
@@ -104,12 +104,12 @@ Given the custodial architecture of v1, insider threats represent a significant 
 
 #### 3.3.1 Personnel with Registry Access
 
-Database administrators with write access to PostgreSQL can modify CID mappings for any DID, alter version history, or change deactivation status.
+Database administrators with write access can modify CID mappings for any DID, alter version history, or change deactivation status.
 
 | Threat | Impact | Required Mitigation |
 |---|---|---|
 | CID substitution | Resolver serves attacker-controlled document | DB write access restricted to app service account only |
-| Version history tampering | Fabricated or erased state transitions | pgAudit enabled for all DID tables |
+| Version history tampering | Fabricated or erased state transitions | Audit enabled for all DID tables |
 | Deactivation toggle | Reactivate deactivated DIDs or vice versa | Direct human write access requires change approval + audit log |
 
 #### 3.3.2 Personnel with AWS Access
@@ -147,9 +147,9 @@ Soulverse operators with backend application access can trigger CREATE, UPDATE, 
 
 The did:soul method uses Ed25519 for key generation: 128-bit security level, deterministic signatures, fast verification, resistance to small-subgroup attacks.
 
-#### 5.5.2 Key Custodianship (v1) — Disclosure
+#### 5.5.2 Key Custodianship (v1) - Disclosure
 
-In the current v1 architecture, the private key is generated in the Soulverse backend, encrypted via KMS, and stored in PostgreSQL. This is a custodial model. Security implications that MUST be disclosed to users:
+In the current v1 architecture, the private key is generated in the Soulverse backend, encrypted via KMS, and stored in DB. This is a custodial model. Security implications that MUST be disclosed to users:
 
 - Soulverse has the technical ability to perform any operation on any DID it manages
 - Compromise of Soulverse's account could expose all private key material
@@ -183,14 +183,14 @@ The did:soul resolution endpoint is the Soulverse backend API, accessed over HTT
 | DID Document (IPFS) | Content-addressed integrity via CID | Available only if pinned; registry compromise can substitute CID |
 | Private key (at rest) | AES-256 encryption via KMS | KMS account compromise; CMK rotation errors |
 | Private key (in memory) | Transient only during key generation | Memory dump during generation window |
-| Registry records (PostgreSQL) | TLS in transit; DB access controls at rest | Unauthorised DB write access; insider modification |
+| Registry records (DB) | TLS in transit; DB access controls at rest | Unauthorised DB write access; insider modification |
 | Resolution responses (HTTP) | TLS in transit | Transport interception; no method-layer signing in v1 |
 
 ---
 
 ### 5.9 Availability and Recovery
 
-The did:soul registry (PostgreSQL) is the single source of truth for DID-to-CID mappings, version history, and deactivation status.
+The did:soul registry is the single source of truth for DID-to-CID mappings, version history, and deactivation status.
 
 Requirements for production deployments:
 
@@ -209,7 +209,7 @@ Requirements for production deployments:
 |---|---|---|
 | Ed25519 private key (plaintext) | Transient — backend memory only | MUST NOT be logged, persisted to disk, or transmitted in plaintext |
 | KMS CMK | KMS service | Protected by IAM policies. Annual rotation minimum recommended |
-| Encrypted private key ciphertext | PostgreSQL | Database access controls. Compromise + CMK access = full key recovery |
+| Encrypted private key ciphertext | Database | Database access controls. Compromise + CMK access = full key recovery |
 | API credentials | Secrets management | MUST NOT be hardcoded in driver configuration or source code |
 
 ---
@@ -234,7 +234,7 @@ did:soul v1 does not implement cryptographic signatures on DID Documents. Docume
 | Custodial key model | High | Soulverse acts as key custodian | User-device key storage (2027) |
 | UUID not self-certifying | Medium | Uniqueness depends on registry | Public-key-derived identifiers (Q4 2026) |
 | Insider threat (DB admin) | High | Direct registry write access possible | IAM separation, pgAudit, change approvals |
-| Insider threat (AWS admin) | Critical | CMK access enables key recovery | CloudTrail, multi-party approval |
+| Insider threat | Critical | CMK access enables key recovery | CloudTrail, multi-party approval |
 | Registry availability/recovery | High | No formal RPO/RTO defined | Backup policy, DR documentation |
 | Plaintext key in memory window | Low | Brief exposure during generation | Secure memory handling, code audit |
 
@@ -256,9 +256,9 @@ The Soulverse backend processes all DID resolution requests, creating a centrali
 
 ### 6.2 Stored Data Compromise
 
-DID Documents on IPFS are public and persistent. While they contain no PII, the combination of a persistent identifier with service endpoints may enable correlation. KMS-encrypted private keys in PostgreSQL are a high-value target.
+DID Documents on IPFS are public and persistent. While they contain no PII, the combination of a persistent identifier with service endpoints may enable correlation. KMS-encrypted private keys in DB are a high-value target.
 
-- **Mitigation:** Separation of key storage (PostgreSQL) from document storage (IPFS) limits blast radius. KMS CMK access should be tightly scoped via IAM policies.
+- **Mitigation:** Separation of key storage from document storage (IPFS) limits blast radius. KMS CMK access should be tightly scoped via IAM policies.
 
 ---
 

@@ -45,30 +45,24 @@ did:soul:541e2553-5b46-4ef3-a8c6-4b4597af831b
 
 ## DID Lifecycle
 
+ ```mermaid
+flowchart TB
+    User[User/Agent]
+    API[DID API - NestJS]
+    DB[Registry]
+    IPFS[IPFS - Doc Storage]
+    Gen[DID Document Generator]
+    Res[Resolver Service]
+    UnivRes[Universal Resolver]
 
-```text
-                   POST /dids
-                        |
-                        v
-                 ┌───────────┐
-                 │  Active   │  version 1
-                 └───────────┘
-                 │           │
-       PUT /dids/:did     POST /dids/:did/rotate
-                 │           │
-                 v           v
-             ┌───────────────────┐
-             │      Active       │  version N
-             │  (updated doc /   │
-             │   rotated key)    │
-             └───────────────────┘
-                       |
-               DELETE /dids/:did
-                       |
-                       v
-               ┌─────────────────┐
-               │   Deactivated   │  permanent, irreversible
-               └─────────────────┘
+    User --> API
+    API --> Gen
+    API --> DB
+    API --> IPFS
+    API --> Res
+    Res --> DB
+    Res --> IPFS
+    API -->|Driver API| UnivRes
 ```
 
 

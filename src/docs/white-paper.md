@@ -1,4 +1,4 @@
-# did:soul — Decentralized Identity
+# did:soul - Decentralized Identity
 
 **White Paper v1.1**
 
@@ -12,7 +12,7 @@ This white paper presents `did:soul`, a W3C-compliant Decentralized Identifier (
 
 1. [Introduction & Problem Statement](#1-introduction--problem-statement)
 2. [Background: Decentralized Identifiers](#2-background-decentralized-identifiers)
-3. [The did:soul Method — Overview](#3-the-didsoul-method--overview)
+3. [did:soul Method Overview](#3-didsoul-method-overview)
 4. [DID Method Selection Criteria Evaluation](#4-did-method-selection-criteria-evaluation)
 5. [Method Specification](#5-method-specification)
 6. [DID Lifecycle Operations](#6-did-lifecycle-operations)
@@ -33,17 +33,17 @@ Modern digital identity systems are overwhelmingly centralized. Whether a user's
 - **Single points of failure:** A breach of the identity provider compromises every identity it manages.
 - **Loss of privacy:** When identity data is controlled by a central provider, user activities can be tracked and analyzed, reducing personal privacy.
 - **Exclusion:** Populations without access to government documents or established credit histories are denied participation in digital economic systems.
-- **Revocability:** A platform can, at any time, suspend or delete an account — including all credentials and history associated with it — without the user's consent.
+- **Revocability:** A platform can, at any time, suspend or delete an account, including all credentials and history associated with it without the user's consent.
 
 #### 1.2 The Soulverse Context
-Soulverse is building a decentralized identity ecosystem in which users maintain full sovereignty over their digital identities — no centralized authority required.
+Soulverse is building a decentralized identity ecosystem in which users maintain full sovereignty over their digital identities, no centralized authority required.
 For this system to be trustworthy, portable, and interoperable, it must be grounded in a Decentralized Identifier (DID) that meets the following requirements:
 
-- **User-controlled sovereignty** — The identifier is owned and governed exclusively by the user, with no third-party custodianship.
-- **Global resolvability** — Any party can resolve the DID independently, without relying on Soulverse infrastructure as a dependency or gatekeeper.
-- **Cryptographic verifiability** — The DID Document exposes public keys that enable tamper-evident signing and proof verification.
-- **Verifiable Credential (VC) compatibility** — The identifier supports the issuance and verification of credentials by third-party issuers, enabling a rich, trust-layered ecosystem.
-- **Persistence** — The identifier remains stable across key rotations and document updates, ensuring long-term continuity of identity.
+- **User-controlled sovereignty:** The identifier is owned and governed exclusively by the user, with no third-party custodianship.
+- **Global resolvability:** Any party can resolve the DID independently, without relying on Soulverse infrastructure as a dependency or gatekeeper.
+- **Cryptographic verifiability:** The DID Document exposes public keys that enable tamper-evident signing and proof verification.
+- **Verifiable Credential (VC) compatibility:** The identifier supports the issuance and verification of credentials by third-party issuers, enabling a rich, trust-layered ecosystem.
+- **Persistence:** The identifier remains stable across key rotations and document updates, ensuring long-term continuity of identity.
 
 #### 1.3 Why Not Use an Existing DID Method?
 
@@ -51,8 +51,8 @@ Several established DID methods were considered, including `did:web`, `did:ion`,
 
 | Method | Key Concern |
 |---|---|
-| `did:web` | Requires domain ownership — reverts to centralized DNS control |
-| `did:key` | Ephemeral — identifier is derived from the current key; key rotation creates a new identity |
+| `did:web` | Requires domain ownership; reverts to centralized DNS control |
+| `did:key` | Identifier is derived from the current key; key rotation creates a new identity |
 | `did:ion` | Relies on Bitcoin Layer 2; high operational cost for high-throughput environments |
 | `did:ethr` | Gas costs on Ethereum; public blockchain identity raises privacy concerns for biometric-anchored data |
 | `did:indy` | Network-specific; requires participation in a Hyperledger Indy consortium |
@@ -70,34 +70,34 @@ A Decentralized Identifier is a URI that:
 - Is **globally unique**
 - Is **persistent** (does not require a centralized registration authority)
 - Is **cryptographically verifiable** (the DID subject can prove control using a private key)
-- Is **resolvable** to a **DID Document** — a machine-readable JSON-LD document containing public keys, service endpoints, and metadata
+- Is **resolvable** to a **DID Document**, a machine-readable JSON-LD document containing public keys, service endpoints, and metadata
 
-The W3C DID Core 1.0 specification defines the data model and abstract operations for DIDs. Each "DID method" is a specification for how a particular DID scheme creates, resolves, updates, and deactivates identifiers — the CRUD of decentralized identity.
+The W3C DID Core 1.0 specification defines the data model and abstract operations for DIDs. Each "DID method" is a specification for how a particular DID scheme creates, resolves, updates, and deactivates identifiers those the CRUD of decentralized identity.
 
 #### 2.2 DID Resolution
 
 A DID resolver takes a DID string as input and returns a **DID Resolution Result** containing:
 
-1. **`didDocument`** — the current DID Document
-2. **`didDocumentMetadata`** — operational metadata (version, deactivation status, timestamps)
-3. **`didResolutionMetadata`** — resolution process metadata (content type, error codes)
+1. **`didDocument`:** the current DID Document
+2. **`didDocumentMetadata`:** operational metadata (version, deactivation status, timestamps)
+3. **`didResolutionMetadata`:** resolution process metadata (content type, error codes)
 
 The **DIF Universal Resolver** is an open-source aggregator that routes resolution requests to method-specific drivers based on the DID's method component, enabling any client to resolve any supported DID method through a single, uniform HTTP interface.
 
 #### 2.3 Verifiable Credentials
 
-DIDs serve as the cryptographic anchors for Verifiable Credentials — tamper-evident, machine-verifiable digital equivalents of physical credentials (diplomas, licenses, proofs of identity). A VC issuer signs claims about a subject's DID, and a verifier can use the subject's public key (retrieved by resolving the DID) to verify the signature — entirely without contacting the issuer.
+DIDs serve as the cryptographic anchors for Verifiable Credentials; tamper-evident, machine-verifiable digital equivalents of physical credentials (diplomas, licenses, proofs of identity). A VC issuer signs claims about a subject's DID, and a verifier can use the subject's public key (retrieved by resolving the DID) to verify the signature, entirely without contacting the issuer.
 
 ---
 
-### 3. The did:soul Method — Overview
+### 3. did:soul Method Overview
 
 `did:soul` is a **ledger-free, IPFS-anchored** DID method. It does not write to any blockchain. Instead:
 
 - The **method-specific identifier** is a random UUID, ensuring global uniqueness without collision.
 - The **DID Document** is stored on IPFS, providing content-addressed, tamper-evident, immutable storage.
 - A **lightweight PostgreSQL registry** maintains the mapping between a DID and the current IPFS Content Identifier (CID) of its document, along with the active KMS key reference.
-- **Private keys never leave the KMS** — KMS or a local in-memory KMS in development — providing hardware-grade key security.
+- **Private keys never leave the KMS**, providing hardware-grade key security.
 - The system is **Universal Resolver-compatible** through a dedicated NestJS driver, enabling ecosystem-wide resolution.
 
 ```
@@ -157,7 +157,7 @@ This section evaluates `did:soul` against the comprehensive set of selection cri
 | # | Criterion  | Notes |
 |---|---|---|
 | 9 | **Support for key rotation** | Yes dedicatedkey rotation endpoint. Each rotation creates a new key pair, new DID Document version, new IPFS CID, and appends to `did_history`. Old keys remain discoverable via historical DID Document resolution. |
-| 10 | **Long-lived DIDs needed for long-lived VCs** | DID identifiers are permanent UUID v4 strings — they never change after creation. Deactivation is the only terminal state and it is explicit. All historical DID Document states, including historical keys used to sign old VCs, are permanently accessible via IPFS CIDs. |
+| 10 | **Long-lived DIDs needed for long-lived VCs** | DID identifiers are permanent UUID v4 strings, they never change after creation. Deactivation is the only terminal state and it is explicit. All historical DID Document states, including historical keys used to sign old VCs, are permanently accessible via IPFS CIDs. |
 | 11 | **DIDs are permanent and immutable account identifiers** | The DID string (`did:soul:<uuid>`) is written once and never mutated. The registry enforces this by design (unique constraint on the `did` column; no delete path for the DID itself). |
 
 ---
@@ -166,9 +166,9 @@ This section evaluates `did:soul` against the comprehensive set of selection cri
 
 | # | Criterion | Notes |
 |---|---|---|
-| 12 | **Scalability and performance** | The backend is a stateless NestJS service, horizontally scalable behind a load balancer. Resolution is a DB lookup + IPFS gateway fetch. Writes involve KMS + IPFS + DB — each independently scalable. KMS handles thousands of signing operations per second. |
+| 12 | **Scalability and performance** | The backend is a stateless NestJS service, horizontally scalable behind a load balancer. Resolution is a DB lookup + IPFS gateway fetch. Writes involve KMS + IPFS + DB, each independently scalable. KMS handles thousands of signing operations per second. |
 | 13 | **Low and predictable marginal cost at scale (millions of accounts)** |At millions of accounts, total cost is dominated by KMS key storage, which can be mitigated by key-sharing across ephemeral DIDs or tiered KMS strategies. |
-| 14 | **Ability to create and update identifiers rapidly (within seconds)** | DID creation involves: UUID generation (microseconds), KMS key creation (100-500ms), IPFS upload (200-500ms), DB write (5-20ms). Total: typically under 2 seconds. Updates follow the same profile without KMS key creation (1 second approx). |
+| 14 | **Ability to create and update identifiers rapidly (within seconds)** | DID creation involves: UUID generation (microseconds), KMS key creation (~100-500ms), IPFS upload (~200-500ms), DB write (~5-20ms). Total: typically under 2 seconds. Updates follow the same profile without KMS key creation (~1 second). |
 | 15 | **Reliable and predictable-latency operation, for updating and resolving** | Both the registrar API and resolution path run on SLA-backed infrastructure. IPFS gateway CDN provides globally consistent (300ms) resolution. |
 | 16 | **Resolution should not require additional state or context** | A resolver needs only the DID string. No additional anchoring chain, no blockchain headers, no external witnesses. The registry lookup returns the current CID; IPFS returns the document. Versioned resolution requires only the version number (fully self-contained). |
 
@@ -180,7 +180,7 @@ This section evaluates `did:soul` against the comprehensive set of selection cri
 |---|---|---|
 | 17 | **Governance: Clear frameworks for updates, dispute resolution, and decision-making** | Governance within Soulverse is informal (engineering team decisions).No inter-organizational governance treaty exists yet. |
 | 18 | **Usability: Simple implementation for developers** | REST API with Swagger UI at `/swagger`. Five intuitive endpoints (`POST /dids`, `GET /dids/:did`, `PUT /dids/:did`, `POST /dids/:did/rotate`, `DELETE /dids/:did`). NestJS framework with `class-validator` DTOs. Published README and developer documentation. Universal Resolver integration for standard resolution. |
-| 19 | **Sustainability: Energy efficiency and eco-friendly infrastructure** | `did:soul` writes to **no blockchain** — it has zero mining or consensus energy cost. Infrastructure is cloud-native running on shared, energy-optimized data centers. IPFS storage is content-addressed (no duplication). Computational overhead is minimal: a hash, an HTTP upload, and a DB row. |
+| 19 | **Sustainability: Energy efficiency and eco-friendly infrastructure** | `did:soul` writes to **no blockchain**, it has zero mining or consensus energy cost. Infrastructure is cloud-native running on shared, energy-optimized data centers. IPFS storage is content-addressed (no duplication). Computational overhead is minimal: a hash, an HTTP upload, and a DB row. |
 | 20 | **Who WANTS to standardize the DID method and commits to doing the work?** | Soulverse Engineering Team is committed to the work. Phase 2 roadmap explicitly includes DID Method Spec Publication to the W3C DID Methods Registry. Standardization commitment exists within the organization; external co-sponsors are not yet confirmed. |
 | 21 | **Are there no trademark or IP issues?** | The name `did:soul` and the Soulverse branding are owned by Soulverse. The method uses only open standards (W3C DID Core, Ed25519-2020, Multibase, IPFS, UUID v4) with no proprietary protocol dependencies. No known IP conflicts. |
 
@@ -200,7 +200,7 @@ This section evaluates `did:soul` against the comprehensive set of selection cri
 | # | Criterion | Notes |
 |---|---|---|
 | 24 | **Community adoption and support** |Currently adopted within the Soulverse ecosystem . Universal Resolver integration provides visibility to the broader DID community. External community adoption is nascent; publication of the formal method spec is the key enabler. |
-| 25 | **Scope / domain of entity types addressed** |The method is generic — any entity can hold a `did:soul`. The method-specific identifier (UUID) imposes no semantic restriction on subject type. |
+| 25 | **Scope / domain of entity types addressed** |The method is generic, any entity can hold a `did:soul`. The method-specific identifier (UUID) imposes no semantic restriction on subject type. |
 | 26 | **Emerging Markets: Offline-friendly, low-bandwidth** | DID creation and update require internet connectivity. Resolution of a locally cached DID Document is possible offline; IPFS clients can serve cached content peer-to-peer. |
 | 27 | **Diversity: At least one fully decentralized DID method** | `did:soul` is **partially decentralized**: DID Documents are stored on the decentralized IPFS network and readable by anyone; the Universal Resolver is a neutral aggregator. However, the **registry** and **KMS** are centralized infrastructure. |
 
@@ -212,11 +212,11 @@ Based on the [DIF DID Traits specification](https://identity.foundation/did-trai
 
 | Trait  | Notes |
 |---|---|
-| `create` | `POST /dids` — creates a new DID with Ed25519 keys |
+| `create` | `POST /dids` - creates a new DID with Ed25519 keys |
 | `resolve` |  Direct API + Universal Resolver driver |
-| `update` |  `PUT /dids/:did` — updates service endpoints and verification methods |
-| `deactivate` |  `DELETE /dids/:did` — sets deactivated flag |
-| `key-rotation` | `POST /dids/:did/rotate` — generates new KMS key pair |
+| `update` |  `PUT /dids/:did` - updates service endpoints and verification methods |
+| `deactivate` |  `DELETE /dids/:did` - sets deactivated flag |
+| `key-rotation` | `POST /dids/:did/rotate` - generates new KMS key pair |
 | `versioned-resolution` |  `?version=n` parameter; all historical states on IPFS |
 | `globally-unique` |  UUID v4 provides statistical uniqueness (~10³⁸ address space) |
 | `persistent` |  DID string never changes; historical documents immutable on IPFS |
@@ -301,7 +301,7 @@ A `did:soul` DID Document is a W3C DID Core 1.0 compliant JSON-LD document:
 | `@context` | Always includes W3C DID v1 context and Ed25519-2020 suite context |
 | `id` | Always the `did:soul:<uuid>` string; never changes |
 | `controller` | Always self-referential (the DID controls itself) |
-| `verificationMethod[].id` | Format: `<did>#keys-<version>` — increments on each key rotation |
+| `verificationMethod[].id` | Format: `<did>#keys-<version>`, increments on each key rotation |
 | `publicKeyMultibase` | Multibase base58btc (`z` prefix) with Ed25519 multicodec prefix (`0xed01`) |
 | `authentication` | Reference list pointing to active verification method IDs |
 | `assertionMethod` | Reference list pointing to active verification method IDs |
@@ -342,9 +342,8 @@ A DID may be deactivated by its controller. Once deactivated, the DID is no long
 Private keys never appear in the `did-soul-backend` application code or database. The KMS is the exclusive holder of private key material:
 
 - **KMS** stores keys in FIPS 140-2 Level 3 Hardware Security Modules (HSMs).
-- All signing operations occur **inside** the KMS — the application provides data to be signed but never handles the raw private key.
-- Key access is governed by AWS IAM policies.
-- All KMS operations are logged in AWS CloudTrail.
+- All signing operations occur **inside** the KMS, the application provides data to be signed but never handles the raw private key.
+- All KMS operations are logged.
 
 #### 7.2 DID Document Integrity
 
@@ -425,7 +424,7 @@ The deployment model provides:
 
 **Benefits:**
 - No shared secrets or passwords.
-- **Selective disclosure** — users present only the credentials relevant to the interaction.
+- **Selective disclosure** - users present only the credentials relevant to the interaction.
 - Verifiers have cryptographic proof of claims without needing to trust Soulverse.
 
 #### 9.3 Organizational Identities

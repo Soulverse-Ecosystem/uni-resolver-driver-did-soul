@@ -147,7 +147,7 @@ This section evaluates `did:soul` against the comprehensive set of selection cri
 | 4 | **Security and privacy features** | Private keys never leave the KMS. DID Documents are publicly accessible on IPFS but contain no biometric or personal data by design. UUID v4 identifiers provide ~2¹²² identifier entropy, preventing enumeration. |
 | 5 | **Global government-approved crypto** | Ed25519 is NIST-approved.KMS with `ECC_ED25519` operates under a FIPS 140-2 validated boundary. |
 | 6 | **Privacy-preserving crypto** | Ed25519 signatures are deterministic and non-interactive. UUID v4 identifiers are non-correlatable to biometric input. No personal data is embedded in DID Documents. Biometric vectors never appear in the DID layer. |
-| 7 | **Digitally signed cryptographic log of changes to the DID Document** | Every DID Document version is permanently stored on IPFS as a content-addressed object, providing an **integrity-guaranteed** history log. The `did_history` table records every version CID with timestamp.|
+| 7 | **Digitally signed cryptographic log of changes to the DID Document** | Every DID Document version is permanently stored on IPFS as a content-addressed object, providing an **integrity-guaranteed** history log.|
 | 8 | **Revocation and Recovery: Decentralized mechanisms for key rotation and DID recovery** | Key rotation is fully implemented and produces a new DID Document version on IPFS. Deactivation is supported. Recovery (for key loss) is not yet implemented.|
 
 ---
@@ -156,7 +156,7 @@ This section evaluates `did:soul` against the comprehensive set of selection cri
 
 | # | Criterion  | Notes |
 |---|---|---|
-| 9 | **Support for key rotation** | Yes dedicatedkey rotation endpoint. Each rotation creates a new key pair, new DID Document version, new IPFS CID, and appends to `did_history`. Old keys remain discoverable via historical DID Document resolution. |
+| 9 | **Support for key rotation** | Yes dedicatedkey rotation endpoint. Each rotation creates a new key pair, new DID Document version, new IPFS CID, and appends to the DB. Old keys remain discoverable via historical DID Document resolution. |
 | 10 | **Long-lived DIDs needed for long-lived VCs** | DID identifiers are permanent UUID v4 strings, they never change after creation. Deactivation is the only terminal state and it is explicit. All historical DID Document states, including historical keys used to sign old VCs, are permanently accessible via IPFS CIDs. |
 | 11 | **DIDs are permanent and immutable account identifiers** | The DID string (`did:soul:<uuid>`) is written once and never mutated. The registry enforces this by design (unique constraint on the `did` column; no delete path for the DID itself). |
 
@@ -218,9 +218,9 @@ Based on the [DIF DID Traits specification](https://identity.foundation/did-trai
 | `deactivate` |  `DELETE /dids/:did` - sets deactivated flag |
 | `key-rotation` | `POST /dids/:did/rotate` - generates new KMS key pair |
 | `versioned-resolution` |  `?version=n` parameter; all historical states on IPFS |
-| `globally-unique` |  UUID v4 provides statistical uniqueness (~10³⁸ address space) |
+| `globally-unique` |  UUID v4 provides statistical uniqueness |
 | `persistent` |  DID string never changes; historical documents immutable on IPFS |
-| `decentralized-registration` | IPFS storage is decentralized; registry (PostgreSQL) is centralized |
+| `decentralized-registration` | IPFS storage is decentralized; registry is centralized |
 | `service-endpoints` | `service` field supported in DID Document updates |
 | `multiple-verification-methods`| Currently one active key per rotation; multiple methods supported by the interface spec |
 
@@ -233,7 +233,7 @@ Based on the [W3C DID Rubric](https://www.w3.org/TR/did-rubric/), key rubric are
 | Rubric Category  | Notes |
 |---|---|
 | **Decentralization of Governance**  | Method governance is currently internal to Soulverse; no formal external governance body |
-| **Decentralization of Registry** | DID Documents on IPFS (decentralized); CID-to-DID index on PostgreSQL (centralized) |
+| **Decentralization of Registry** | DID Documents on IPFS (decentralized); CID-to-DID index on DB (centralized) |
 | **Cryptographic Verifiability** | Ed25519 keys; DID Documents signed via KMS; public key in multibase |
 | **DID Document Immutability** | IPFS content-addressing; historical CIDs never change |
 | **Method Specification Quality** | Internal documentation exists; formal W3C-registered spec not yet published |
@@ -347,7 +347,7 @@ Private keys never appear in the `did-soul-backend` application code or database
 
 #### 7.2 DID Document Integrity
 
-DID Documents stored on IPFS are content-addressed by their hash (CID). Any modification of the document would produce a different CID. The registry's `currentCid` pointer is the authoritative reference to the current document. Since IPFS guarantees the document at a given CID is immutable, a valid CID pointer always resolves to the exact document originally stored.
+DID Documents stored on IPFS are content-addressed by their hash (CID). Any modification of the document would produce a different CID. The registry's pointer is the authoritative reference to the current document. Since IPFS guarantees the document at a given CID is immutable, a valid CID pointer always resolves to the exact document originally stored.
 
 #### 7.3 Threat Model
 
@@ -420,7 +420,7 @@ The deployment model provides:
 
 **Context:** Third-party applications wish to authenticate Soulverse users without passwords or centralized identity providers.
 
-**DID Role:** The user presents a Verifiable Presentation signed with their `did:soul` private key (via KMS). The verifier resolves the DID, retrieves the public key, and verifies the presentation signature — no call to Soulverse is required.
+**DID Role:** The user presents a Verifiable Presentation signed with their `did:soul` private key (via KMS). The verifier resolves the DID, retrieves the public key, and verifies the presentation signature, no call to Soulverse is required.
 
 **Benefits:**
 - No shared secrets or passwords.
@@ -443,7 +443,7 @@ The deployment model provides:
 
 **Context:** Regulated domains (financial services, healthcare) require proof that a credential was valid at a specific past date.
 
-**DID Role:** Because every version of a DID Document is permanently and immutably stored on IPFS, verifiers can resolve a historical DID Document version to confirm that a specific key was active at the time a credential was signed — even after subsequent key rotations.
+**DID Role:** Because every version of a DID Document is permanently and immutably stored on IPFS, verifiers can resolve a historical DID Document version to confirm that a specific key was active at the time a credential was signed, even after subsequent key rotations.
 
 ---
 

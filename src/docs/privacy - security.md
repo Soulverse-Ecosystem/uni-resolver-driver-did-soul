@@ -1,7 +1,4 @@
-# did:soul Method Specification
-## Security and Privacy Considerations
-
----
+# did:soul - Security and Privacy Considerations
 
 ## 1. Security Considerations
 
@@ -22,7 +19,7 @@ Before discussing individual attack vectors, the overall trust model of did:soul
 | Private Key (plaintext) | Transient plaintext during generation and KMS encryption | Secret — exists only in memory briefly |
 | Registry Records | DID-to-CID mappings, version history, deactivation status | Integrity critical — source of truth |
 | Resolution Responses | DID Document + metadata returned to verifiers | Integrity critical — not currently signed |
-| AWS KMS CMK | Symmetric key used to encrypt/decrypt all private keys | |
+| KMS | Symmetric key used to encrypt/decrypt all private keys | |
 
 #### 1.1.2 Actors
 
@@ -30,7 +27,7 @@ Before discussing individual attack vectors, the overall trust model of did:soul
 |---|---|---|
 | DID Subject | Untrusted by backend | In v1, has no direct cryptographic control — relies on Soulverse |
 | Soulverse Backend | Trusted authority | Generates keys, encrypts/decrypts via KMS, writes to registry and IPFS, performs all mutations |
-| Soulverse Personnel | Partially trusted | DB admins, DevOps, AWS admins have varying access to registry and KMS |
+| Soulverse Personnel | Partially trusted | DB admins, DevOps, admins have varying access to registry and KMS |
 | Verifier | Untrusted | Resolves DIDs; cannot modify state |
 | Resolver Operator | Partially trusted | Operates did:soul driver; routes resolution requests |
 | External Attacker | Untrusted | Network-level or application-level adversary |
@@ -40,7 +37,7 @@ Before discussing individual attack vectors, the overall trust model of did:soul
 The did:soul v1 architecture has four trust boundaries:
 
 - **Trust boundary 1:** User Device → Soulverse Backend. The user trusts Soulverse to act faithfully on their behalf.
-- **Trust boundary 2:** Backend → AWS KMS. The backend trusts AWS KMS for key protection and encryption.
+- **Trust boundary 2:** Backend → The backend trusts KMS for key protection and encryption.
 - **Trust boundary 3:** Registry → IPFS. The registry CID maps to IPFS content. Registry integrity is assumed.
 - **Trust boundary 4:** Driver → Backend. The Universal Resolver driver trusts the backend response.
 
@@ -117,7 +114,7 @@ Database administrators with write access to PostgreSQL can modify CID mappings 
 
 #### 3.3.2 Personnel with AWS Access
 
-AWS administrators with access to the KMS CMK can decrypt any stored private key, disable or delete the CMK, or modify IAM policies.
+Administrators with access to the KMS can decrypt any stored private key, disable or delete the CMK, or modify IAM policies.
 
 | Threat | Impact | Required Mitigation |
 |---|---|---|
@@ -152,10 +149,10 @@ The did:soul method uses Ed25519 for key generation: 128-bit security level, det
 
 #### 5.5.2 Key Custodianship (v1) — Disclosure
 
-In the current v1 architecture, the private key is generated in the Soulverse backend, encrypted via AWS KMS, and stored in PostgreSQL. This is a custodial model. Security implications that MUST be disclosed to users:
+In the current v1 architecture, the private key is generated in the Soulverse backend, encrypted via KMS, and stored in PostgreSQL. This is a custodial model. Security implications that MUST be disclosed to users:
 
 - Soulverse has the technical ability to perform any operation on any DID it manages
-- Compromise of Soulverse's AWS account could expose all private key material
+- Compromise of Soulverse's account could expose all private key material
 - The DID subject does not independently hold or control their private key
 - The DID subject cannot independently prove they authorised a given state change
 
@@ -184,7 +181,7 @@ The did:soul resolution endpoint is the Soulverse backend API, accessed over HTT
 | Data | Protection | Susceptible To |
 |---|---|---|
 | DID Document (IPFS) | Content-addressed integrity via CID | Available only if pinned; registry compromise can substitute CID |
-| Private key (at rest) | AES-256 encryption via AWS KMS CMK | KMS account compromise; CMK rotation errors |
+| Private key (at rest) | AES-256 encryption via KMS | KMS account compromise; CMK rotation errors |
 | Private key (in memory) | Transient only during key generation | Memory dump during generation window |
 | Registry records (PostgreSQL) | TLS in transit; DB access controls at rest | Unauthorised DB write access; insider modification |
 | Resolution responses (HTTP) | TLS in transit | Transport interception; no method-layer signing in v1 |
@@ -211,7 +208,7 @@ Requirements for production deployments:
 | Secret Data | Storage | Protection Requirements |
 |---|---|---|
 | Ed25519 private key (plaintext) | Transient — backend memory only | MUST NOT be logged, persisted to disk, or transmitted in plaintext |
-| AWS KMS CMK | AWS KMS service | Protected by IAM policies. Annual rotation minimum recommended |
+| KMS CMK | KMS service | Protected by IAM policies. Annual rotation minimum recommended |
 | Encrypted private key ciphertext | PostgreSQL | Database access controls. Compromise + CMK access = full key recovery |
 | API credentials | Secrets management | MUST NOT be hardcoded in driver configuration or source code |
 
@@ -230,7 +227,7 @@ did:soul v1 does not implement cryptographic signatures on DID Documents. Docume
 | Risk | Severity | Current Status | Mitigation Path |
 |---|---|---|---|
 | Soulverse infrastructure availability | High | Single point of failure for resolution | Distributed resolver nodes (Q4 2026) |
-| AWS KMS account compromise | Critical | All private keys recoverable | Multi-region KMS, HSM evaluation |
+| KMS account compromise | Critical | All private keys recoverable | Multi-region KMS, HSM evaluation |
 | Registry database compromise | High | CID mappings could be tampered | DB audit logging, write access controls |
 | No signature verification on mutations | Critical | Backend is sole authority for writes | Non-custodial signing (2027) |
 | No signed resolution responses | Medium | Replay/substitution undetectable at method layer | Response signing (v2) |
@@ -259,7 +256,7 @@ The Soulverse backend processes all DID resolution requests, creating a centrali
 
 ### 6.2 Stored Data Compromise
 
-DID Documents on IPFS are public and persistent. While they contain no PII, the combination of a persistent identifier with service endpoints may enable correlation. AWS KMS-encrypted private keys in PostgreSQL are a high-value target.
+DID Documents on IPFS are public and persistent. While they contain no PII, the combination of a persistent identifier with service endpoints may enable correlation. KMS-encrypted private keys in PostgreSQL are a high-value target.
 
 - **Mitigation:** Separation of key storage (PostgreSQL) from document storage (IPFS) limits blast radius. KMS CMK access should be tightly scoped via IAM policies.
 

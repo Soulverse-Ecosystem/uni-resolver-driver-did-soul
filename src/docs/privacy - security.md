@@ -149,10 +149,10 @@ The did:soul method uses Ed25519 for key generation: 128-bit security level, det
 
 #### 5.5.2 Key Custodianship (v1) - Disclosure
 
-In the current v1 architecture, the private key is generated in the Soulverse backend, encrypted via KMS, and stored in DB. This is a custodial model. Security implications that MUST be disclosed to users:
+In the current v1 architecture, the private key is generated in the Soulverse backend, encrypted via KMS, and stored in KMS itself. This is a custodial model. Security implications that MUST be disclosed to users:
 
 - Soulverse has the technical ability to perform any operation on any DID it manages
-- Compromise of Soulverse's account could expose all private key material
+- Compromise of KMS permissions could allow an attacker to perform unauthorized signing operations on behalf of DID subjects.
 - The DID subject does not independently hold or control their private key
 - The DID subject cannot independently prove they authorised a given state change
 
@@ -207,9 +207,8 @@ Requirements for production deployments:
 
 | Secret Data | Storage | Protection Requirements |
 |---|---|---|
-| Ed25519 private key (plaintext) | Transient — backend memory only | MUST NOT be logged, persisted to disk, or transmitted in plaintext |
+| Ed25519 private key (plaintext) | KMS (non-exportable) | MUST never leave KMS. All signing operations MUST occur inside KMS. Private key material MUST NOT be logged, exported, persisted in application storage, or transmitted over the network |
 | KMS CMK | KMS service | Protected by IAM policies. Annual rotation minimum recommended |
-| Encrypted private key ciphertext | Database | Database access controls. Compromise + CMK access = full key recovery |
 | API credentials | Secrets management | MUST NOT be hardcoded in driver configuration or source code |
 
 ---
@@ -231,9 +230,9 @@ did:soul v1 does not implement cryptographic signatures on DID Documents. Docume
 | Registry database compromise | High | CID mappings could be tampered | DB audit logging, write access controls |
 | No signature verification on mutations | Critical | Backend is sole authority for writes | Non-custodial signing (2027) |
 | No signed resolution responses | Medium | Replay/substitution undetectable at method layer | Response signing (v2) |
-| Custodial key model | High | Soulverse acts as key custodian | User-device key storage (2027) |
+| Custodial key model | High | Soulverse use KMS as key custodian | User-device key storage (2027) |
 | UUID not self-certifying | Medium | Uniqueness depends on registry | Public-key-derived identifiers (Q4 2026) |
-| Insider threat (DB admin) | High | Direct registry write access possible | IAM separation, pgAudit, change approvals |
+| Insider threat (DB admin) | High | Direct registry write access possible | IAM separation, Audit, change approvals |
 | Insider threat | Critical | CMK access enables key recovery | CloudTrail, multi-party approval |
 | Registry availability/recovery | High | No formal RPO/RTO defined | Backup policy, DR documentation |
 | Plaintext key in memory window | Low | Brief exposure during generation | Secure memory handling, code audit |
@@ -256,7 +255,7 @@ The Soulverse backend processes all DID resolution requests, creating a centrali
 
 ### 6.2 Stored Data Compromise
 
-DID Documents on IPFS are public and persistent. While they contain no PII, the combination of a persistent identifier with service endpoints may enable correlation. KMS-encrypted private keys in DB are a high-value target.
+DID Documents on IPFS are public and persistent. While they contain no PII, the combination of a persistent identifier with service endpoints may enable correlation. KMS-encrypted private keys in KMS itself are a high-value target.
 
 - **Mitigation:** Separation of key storage from document storage (IPFS) limits blast radius. KMS CMK access should be tightly scoped via IAM policies.
 

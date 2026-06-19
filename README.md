@@ -115,8 +115,8 @@ Universal Resolver → Driver (NestJS/Node.js) → Soulverse Backend API → DID
 | `src/module.ts` | Root NestJS module; wires together HTTP client, config, controller, and services |
 | `src/controller/driver.controller.ts` | HTTP handler for `GET /1.0/identifiers/:did` |
 | `src/service/driver.service.ts` | Core resolution logic; validates the DID prefix and delegates to the backend |
-| `src/constant/constant.ts` | `BackendUrlService` — builds the backend URL (with optional version parameter) |
-| `src/dto/driver.dto.ts` | `ResolveDto` — typed input validation for DID and version |
+| `src/constant/constant.ts` | `BackendUrlService`; builds the backend URL (with optional version parameter) |
+| `src/dto/driver.dto.ts` | `ResolveDto`; typed input validation for DID and version |
 | `src/interface/interface.ts` | TypeScript interfaces for `DidResolutionResult` and `DidDocument` |
 | `src/utils/error-handling.ts` | Maps Axios HTTP errors to W3C DID error types |
 | `Dockerfile` | Container configuration for deployment |
@@ -193,7 +193,7 @@ Universal Resolver → Driver (NestJS/Node.js) → Soulverse Backend API → DID
 ## Integration Testing
 
 ```bash
-# Start the driver (native)
+# Start the driver
 npm run start:dev
 
 # Resolve a DID
@@ -207,8 +207,8 @@ curl -X GET "http://localhost:4000/1.0/identifiers/did:soul:<identifier>?version
 
 Contributions are welcome! Please ensure:
 
-1. All tests pass before submitting a PR (`npm run test`)
-2. Docker image builds successfully (`docker build .`)
+1. All tests pass before submitting a PR
+2. Docker image builds successfully
 3. Driver resolves example DIDs correctly
 4. Documentation is updated as needed
 

@@ -15,7 +15,7 @@ Before discussing individual attack vectors, the overall trust model of did:soul
 | Asset | Description | Sensitivity |
 |---|---|---|
 | DID Document | Public key material, service endpoints, version metadata | Public - integrity critical |
-| Private Key (encrypted) | KMS-encrypted Ed25519 private key ciphertext | Secret - stored in DB |
+| Private Key (encrypted) | KMS-encrypted Ed25519 private key ciphertext | Secret - stored in KMS |
 | Private Key (plaintext) | Transient plaintext during generation and KMS encryption | Secret - exists only in memory briefly |
 | Registry Records | DID-to-CID mappings, version history, deactivation status | Integrity critical - source of truth |
 | Resolution Responses | DID Document + metadata returned to verifiers | Integrity critical - not currently signed |

@@ -212,9 +212,6 @@ Contributions are welcome! Please ensure:
 3. Driver resolves example DIDs correctly
 4. Documentation is updated as needed
 
-## License
-
-Apache License 2.0
 
 ## Additional Resources
 

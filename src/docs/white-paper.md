@@ -433,13 +433,27 @@ The deployment model provides:
 
 **DID Role:** An organization's `did:soul` anchors its public keys and service endpoints. Rotation of organizational keys does not change the organization's persistent identifier, simplifying key lifecycle management.
 
-#### 9.4 IoT Device Identity
+#### 9.4 AI Agent Identity and Delegated Authorization
+
+**Context:** AI agents acting on behalf of users require their own verifiable identities to authenticate with services, receive delegated permissions, and maintain accountability for their actions.
+
+**DID Role:** A user creates a dedicated `did:soul` identifier for an AI agent and cryptographically delegates authority to it. The agent maintains its own DID Document and key pair, while the controller relationship links the agent to the user's DID. Verifiable Credentials (VCs) can be issued directly to the agent, granting specific permissions on behalf of the user.
+
+**Benefits:**
+- **Verifiable delegation of authority** from the user to the AI agent.
+- **Independent identity for AI agents** without requiring access to or sharing of user credentials.
+- **Lifecycle management** through standard DID operations such as document updates, key rotation, and deactivation.
+- **Immutable audit trail** through historical DID Document versions stored on IPFS.
+- **Fine-grained authorization** using Verifiable Credentials issued directly to the agent DID.
+
+
+#### 9.5 IoT Device Identity
 
 **Context:** Physical devices (access control terminals, biometric scanners, wallet hardware) require verifiable identities for secure communication and audit.
 
 **DID Role:** Each device is provisioned a `did:soul`, with its public key stored in the DID Document. Device-to-device communication can be authenticated using DIDComm, with mutual DID resolution ensuring neither party needs pre-shared secrets.
 
-#### 9.5 Historical Credential Audit
+#### 9.6 Historical Credential Audit
 
 **Context:** Regulated domains (financial services, healthcare) require proof that a credential was valid at a specific past date.
 

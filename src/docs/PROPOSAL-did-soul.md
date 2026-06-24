@@ -33,7 +33,6 @@ The `did:soul` method also has limitations and trade-offs that should be acknowl
 - **Dependence on registry availability**: Resolution relies on the registry as the authoritative index for the latest DID Document reference.
 - **Public document exposure**: DID Documents stored on IPFS are retrievable by anyone with the CID, so sensitive data must not be placed in the document.
 - **Key management complexity**: Secure key generation, rotation, and protection require disciplined operational controls.
-- **Historical resolution cost**: Resolving older versions may require additional lookup and retrieval steps.
 - **Not fully self-certifying by identifier alone**: The DID is unique and stable, but resolution still depends on associated registry state and stored history.
 - **Implementation maturity may be limited**: As a custom method, adoption depends on tooling, documentation, and resolver support.
 - **Storage or infrastructure costs may still exist**: Even if DID creation is free, supporting systems like storage or hosting may still have operational cost.

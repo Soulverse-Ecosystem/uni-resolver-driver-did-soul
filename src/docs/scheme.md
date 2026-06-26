@@ -92,7 +92,7 @@ To create a `did:soul` DID, a client submits a `POST /dids` request with no requ
   - `verificationMethod` containing the public key as `#keys-1`
   - `authentication` and `assertionMethod` both referencing `#keys-1`
   - `created` and `updated` set to the current ISO timestamp
-6. **IPFS pinning:** Upload the DID Document to IPFS. Tag the pin with `pinataMetadata` including the DID string and version number.
+6. **IPFS pinning:** Upload the DID Document to IPFS. Tag the pin including the DID string and version number.
 7. **Registry persistence:** Write a record to the `did` table with: `did`, `currentCid`, `encryptedKey`, `version: 1`, `deactivated: false`.
 8. **History initialization:** Write the first entry to the version history with `version: 1` and the initial CID.
 
@@ -189,7 +189,7 @@ A DID Update changes the content of the DID Document by adding or replacing serv
   - `@context`, `id`, `controller`, and `created` are always preserved unchanged.
 4. Set `updated` to the current ISO timestamp.
 5. Increment the version counter (`newVersion = currentVersion + 1`).
-6. Pin the updated DID Document to IPFS. Tag with `pinataMetadata` using the new version number.
+6. Pin the updated DID Document to IPFS.
 7. Update the registry: set `currentCid` to the new CID and `version` to `newVersion`.
 8. Append a new entry to the version history with the new version and content identifier.
 

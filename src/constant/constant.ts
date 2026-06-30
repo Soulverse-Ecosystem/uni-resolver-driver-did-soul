@@ -17,4 +17,11 @@ export class BackendUrlService {
 
     return `${backendEndpoint}/dids/${dto.did}`;
   }
+
+  getKelUrl(did: string): string {
+    const backendEndpoint = this.config.get<string>(
+      'SOULVERSE_BACKEND_ENDPOINT',
+    );
+    return `${backendEndpoint}/dids/${did}/kel`;
+  }
 }

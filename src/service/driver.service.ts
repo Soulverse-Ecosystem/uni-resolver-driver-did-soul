@@ -5,6 +5,7 @@ import { BackendUrlService } from '../constant/constant';
 import { ResolveDto } from '../dto/driver.dto';
 import { DidResolutionResult } from '../interface/interface';
 import { mapAxiosErrorToDidError } from 'src/utils/error-handling';
+import { initKeri, didDocumentFromKel } from '../keri/verify';
 
 @Injectable()
 export class DriverService {
@@ -19,21 +20,22 @@ export class DriverService {
     }
 
     try {
-      const url = this.backendUrl.getResolveDidUrl(payload);
+      await initKeri();
+      const url = this.backendUrl.getKelUrl(payload.did);
       const response = await firstValueFrom(this.httpService.get(url));
+      const kel =
+        (response.data as { kel?: Record<string, unknown>[] })?.kel ?? [];
 
-      const data = response.data as DidResolutionResult;
+      // The driver verifies the key event log itself; it does not trust the backend.
+      const result = didDocumentFromKel(kel);
+      if (!result.ok || result.did !== payload.did) {
+        return this.buildError('notFound');
+      }
 
       return {
-        didDocument: data.didDocument,
-        didDocumentMetadata: {
-          versionId: data?.didDocumentMetadata?.versionId,
-          deactivated: data?.didDocumentMetadata?.deactivated ?? false,
-          updated: data?.didDocumentMetadata?.updated,
-        },
-        didResolutionMetadata: {
-          contentType: 'application/did+json',
-        },
+        didDocument: result.didDocument ?? null,
+        didDocumentMetadata: { deactivated: false },
+        didResolutionMetadata: { contentType: 'application/did+json' },
       };
     } catch (error) {
       const mappedError = mapAxiosErrorToDidError(error);

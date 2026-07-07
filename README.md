@@ -5,7 +5,7 @@ This is a [Universal Resolver](https://github.com/decentralized-identity/univers
 ## Specifications
 
 - [Decentralized Identifiers](https://www.w3.org/TR/did-core/)
-- [DID Method Specification](https://github.com/Soulverse-Ecosystem/did-soul-backend/tree/feat/did-kms-integration](https://github.com/Soulverse-Ecosystem/uni-resolver-driver-did-soul/blob/main/src/docs/scheme.md))
+- [DID Method Specification](src/docs/scheme.md)
 
 ## Example DIDs
 

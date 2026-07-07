@@ -21,10 +21,7 @@ did:soul:aa165785-69a9-4fd0-96a4-ff0ccd592cfd
 docker build -f ./Dockerfile . -t universalresolver/driver-did-soul
 
 # Run the container
-docker run -p 8080:8080 \
-  -e PORT=8080 \
-  -e SOULVERSE_BACKEND_ENDPOINT=https://did-soul-backend.soulverse.us/swagger \
-  universalresolver/driver-did-soul
+docker run -p 8080:8080 universalresolver/driver-did-soul
 
 # Test the driver
 curl -X GET http://localhost:8080/1.0/identifiers/did:soul:<identifier>
@@ -45,18 +42,6 @@ npm run start:dev
 npm run build
 npm run start:prod
 ```
-
-The server starts on the port defined by the `PORT` environment variable (default: `4000`).
-
-
-## Driver Environment Variables
-
-The driver recognizes the following environment variables:
-
-| Variable | Description | Default |
-|---|---|---|
-| `PORT` | HTTP port for the driver service | `4000` |
-| `SOULVERSE_BACKEND_ENDPOINT` | Base URL of the Soulverse DID backend API | `https://did-soul-backend.soulverse.us/swagger` |
 
 ## Driver Metadata
 
@@ -104,7 +89,7 @@ GET {SOULVERSE_BACKEND_ENDPOINT}/dids/{did}?version={version}
 ## Architecture
 
 ```
-Universal Resolver → Driver (NestJS/Node.js) → Soulverse Backend API → DID Document
+Universal Resolver → Driver → Soulverse Backend API → DID Document
 ```
 
 ### Source Components

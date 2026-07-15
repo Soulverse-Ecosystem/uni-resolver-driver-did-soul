@@ -60,7 +60,7 @@ npm run start:prod
 
 ## Method-Specific Information
 
-The `did:soul` method is a DID method developed by the [Soulverse](https://soulverse.us](https://www.soulverse.world/)) ecosystem.
+The `did:soul` method is a DID method developed by the [Soulverse](https://www.soulverse.world/) ecosystem.
 
 ### Key Characteristics
 

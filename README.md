@@ -60,7 +60,7 @@ npm run start:prod
 
 ## Method-Specific Information
 
-The `did:soul` method is a DID method developed by the [Soulverse](https://soulverse.us) ecosystem.
+The `did:soul` method is a DID method developed by the [Soulverse](https://soulverse.us](https://www.soulverse.world/)) ecosystem.
 
 ### Key Characteristics
 
@@ -117,41 +117,41 @@ Universal Resolver → Driver → Soulverse Backend API → DID Document
       "https://www.w3.org/ns/did/v1",
       "https://w3id.org/security/suites/ed25519-2020/v1"
     ],
-    "id": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
-    "controller": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
+    "id": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
+    "controller": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
     "verificationMethod": [
       {
-        "id": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd#keys-1",
+        "id": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26#keys-1",
         "type": "Ed25519VerificationKey2020",
-        "controller": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
-        "publicKeyMultibase": "z6Mkp2obNZFRCF2YJat8TRH1EGc97EzMtFJTeFxkmPr4ZAvg"
+        "controller": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
+        "publicKeyMultibase": "z6Mkn8qNkxijhq1av1VVphNFe4ckdb53kh3RTYjjbJTigia1"
       }
     ],
     "authentication": [
-      "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd#keys-1"
+      "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26#keys-1"
     ],
     "assertionMethod": [
-      "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd#keys-1"
+      "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26#keys-1"
     ],
-    "created": "2026-04-13T17:03:11.835Z",
-    "updated": "2026-04-13T17:03:11.835Z"
+    "created": "2026-06-26T10:17:54Z",
+    "updated": "2026-06-26T10:17:54Z"
   },
   "didResolutionMetadata": {
-    "driverDuration": 8340,
+    "driverDuration": 8081,
     "contentType": "application/did",
     "pattern": "^(did:soul:.+)$",
     "driverUrl": "http://driver-did-soul:8080/1.0/identifiers/$1",
-    "duration": 8367,
+    "duration": 8082,
     "did": {
-      "didString": "did:soul:2cabf34e-2c14-473f-ba75-0c098178d7bd",
-      "methodSpecificId": "2cabf34e-2c14-473f-ba75-0c098178d7bd",
+      "didString": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
+      "methodSpecificId": "a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
       "method": "soul"
     }
   },
   "didDocumentMetadata": {
     "versionId": "1",
     "deactivated": false,
-    "updated": "2026-04-13T17:03:14.491Z"
+    "updated": "2026-06-26T10:17:55Z"
   }
 }
 ```
@@ -187,16 +187,6 @@ curl -X GET http://localhost:4000/1.0/identifiers/did:soul:<identifier>
 # Resolve a specific version
 curl -X GET "http://localhost:4000/1.0/identifiers/did:soul:<identifier>?version=1"
 ```
-
-## Contributing
-
-Contributions are welcome! Please ensure:
-
-1. All tests pass before submitting a PR
-2. Docker image builds successfully
-3. Driver resolves example DIDs correctly
-4. Documentation is updated as needed
-
 
 ## Additional Resources
 

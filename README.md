@@ -10,8 +10,8 @@ This is a [Universal Resolver](https://github.com/decentralized-identity/univers
 ## Example DIDs
 
 ```
-did:soul:3b56b12b-b9bc-4af1-b0b0-82ecc4b1c18b
-did:soul:aa165785-69a9-4fd0-96a4-ff0ccd592cfd
+did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26
+did:soul:d9328da5-4a94-41d9-900a-a04dd243e9d9
 ```
 
 ## Build and Run (Docker)

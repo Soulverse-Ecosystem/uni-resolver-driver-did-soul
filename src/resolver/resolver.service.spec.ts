@@ -7,7 +7,7 @@ import {
   generateEd25519KeyPair,
   serializeDidLog,
   type DidLogEntry,
-} from '@soulverse/did-soul-core';
+} from '@soulverse-sdk/did-soul-core';
 import { ResolverService } from './resolver.service';
 
 const config = {
@@ -16,8 +16,7 @@ const config = {
 } as ConfigService;
 
 function serve(body: string, status = 200): void {
-  globalThis.fetch = (() =>
-    Promise.resolve(new Response(body, { status }))) as unknown as typeof fetch;
+  globalThis.fetch = () => Promise.resolve(new Response(body, { status }));
 }
 
 async function genesis(): Promise<{ did: string; entry: DidLogEntry }> {
@@ -88,9 +87,9 @@ describe('ResolverService', () => {
     ['did:web:example.com', 'invalidDid'],
     ['did:soul:../../admin', 'invalidDid'],
   ])('rejects %s before any network call', async (did, expected) => {
-    globalThis.fetch = (() => {
+    globalThis.fetch = () => {
       throw new Error('must not reach the registry');
-    }) as unknown as typeof fetch;
+    };
 
     const result = await service.resolve(did, {});
 

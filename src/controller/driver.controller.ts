@@ -10,7 +10,7 @@ import {
 import {
   DID_RESOLUTION_CONTENT_TYPE,
   type ResolveOptions,
-} from '@soulverse/did-soul-core';
+} from '@soulverse-sdk/did-soul-core';
 import type { Response } from 'express';
 import { ResolverService } from '../resolver/resolver.service';
 

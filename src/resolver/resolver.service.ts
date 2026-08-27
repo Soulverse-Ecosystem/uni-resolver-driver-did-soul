@@ -7,7 +7,7 @@ import {
   verifyLog,
   type DidLogEntry,
   type ResolveOptions,
-} from '@soulverse/did-soul-core';
+} from '@soulverse-sdk/did-soul-core';
 import type {
   DidResolutionResult,
   ResolutionError,

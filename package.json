@@ -1,7 +1,7 @@
 {
   "name": "uni-resolver-driver-did-soul",
   "version": "0.0.1",
-  "description": "",
+  "description": "Universal Resolver driver for did:soul. Verifies logs locally.",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -20,16 +20,15 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "axios": "^1.14.0",
+    "@soulverse/did-soul-core": "file:../did-soul-backend",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "joi": "^17.13.3",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -62,15 +61,18 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "rootDir": ".",
+    "testRegex": "src/.*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "coverage",
+    "testEnvironment": "node",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@noble|@scure)/)"
+    ]
   }
 }

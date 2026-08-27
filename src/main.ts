@@ -1,22 +1,13 @@
-import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './module';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('');
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: false,
-      transform: true,
-    }),
-  );
-
-  const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT') || 4000;
+  const port = app.get(ConfigService).get<number>('PORT') ?? 8080;
   await app.listen(port);
 }
 void bootstrap();

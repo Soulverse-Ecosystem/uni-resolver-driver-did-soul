@@ -1,194 +1,68 @@
-# Universal Resolver Driver: did:soul
+# uni-resolver-driver-did-soul
 
-This is a [Universal Resolver](https://github.com/decentralized-identity/universal-resolver) driver for **did:soul** identifiers.
-
-## Specifications
-
-- [Decentralized Identifiers](https://www.w3.org/TR/did-core/)
-- [DID Method Specification](src/docs/scheme.md)
-
-## Example DIDs
+A [Universal Resolver](https://github.com/decentralized-identity/universal-resolver) driver
+for `did:soul`.
 
 ```
-did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26
-did:soul:d9328da5-4a94-41d9-900a-a04dd243e9d9
+GET /1.0/identifiers/did:soul:QmcXdvmawyuog6BurtvYTYqF1SdiU2BAR8fGZuqw3X193i
 ```
 
-## Build and Run (Docker)
+## It verifies, it does not proxy
 
-```bash
-# Build the Docker image
-docker build -f ./Dockerfile . -t universalresolver/driver-did-soul
+A `did:soul` is an append-only, hash-chained log of signed entries, and the identifier is a
+hash of its own genesis entry. So this driver fetches the raw log from the registry and
+verifies it here, in process:
 
-# Run the container
-docker run -p 8080:8080 universalresolver/driver-did-soul
+1. `GET {SOUL_REGISTRY_URL}/dids/{did}/log`
+2. `verifyLog(log, did)` recomputes the SCID, replays the hash chain and checks every proof
+3. `resolveFromLog(log, did, options)` produces the document
 
-# Test the driver
-curl -X GET http://localhost:8080/1.0/identifiers/did:soul:<identifier>
-```
+The registry is a transport, not an authority. A driver that returned whatever the registry
+said would discard the only property the method has, and anyone who could MITM the registry
+would control every key the Universal Resolver hands out. Tampering changes the genesis
+hash, so the SCID stops matching its own content and resolution fails with
+`invalidDidDocument`.
 
-## Build and Run (Native)
+Verification lives in `@soulverse/did-soul-core`, the same code the registry runs. One
+implementation, two callers.
 
-**Prerequisites:** Node.js 18+
+## Configuration
 
-```bash
-# Install dependencies
+| Variable | Required | Default | Meaning |
+| --- | --- | --- | --- |
+| `SOUL_REGISTRY_URL` | yes | none | Base URL of the did:soul registry. No default on purpose: a driver pointed at nothing fails at boot rather than building requests against `undefined`. |
+| `SOUL_REGISTRY_TIMEOUT_MS` | no | `10000` | Per request timeout. |
+| `PORT` | no | `8080` | |
+
+## Responses
+
+A [DID Resolution](https://w3c-ccg.github.io/did-resolution/) result, with the status code
+matching the outcome rather than always 200.
+
+| Outcome | Status | `didResolutionMetadata.error` |
+| --- | --- | --- |
+| Resolved | 200 | none |
+| Not a well formed did:soul | 400 | `invalidDid` |
+| Log did not verify | 400 | `invalidDidDocument` |
+| No such DID | 404 | `notFound` |
+| Deactivated | 410 | `deactivated` |
+| Registry unreachable or slow | 500 | `internalError`, `timeout` |
+
+Historical versions work through `?versionId=`, `?versionNumber=` or `?versionTime=`.
+
+## Run it
+
+```sh
 npm install
-
-# Development (watch mode)
-npm run start:dev
-
-# Production
 npm run build
-npm run start:prod
+SOUL_REGISTRY_URL=https://registry.example.com node dist/main
 ```
 
-## Driver Metadata
-
-### Resolution Metadata
-
-| Field | Value |
-|---|---|
-| `contentType` | `application/did+json` |
-| `pattern` | DID must begin with `did:soul:` |
-
-### Supported Query Parameters
-
-| Parameter | Alias | Description |
-|---|---|---|
-| `version` | `versionId` | Resolve a specific version of the DID document |
-
-## Method-Specific Information
-
-The `did:soul` method is a DID method developed by the [Soulverse](https://www.soulverse.world/) ecosystem.
-
-### Key Characteristics
-
-- **Authority:** Soulverse
-- **Resolution:** Delegates to the Soulverse backend API
-- **Versioning:** Supports historical DID document resolution via `version` / `versionId` query parameters
-- **Deactivation:** Tracks and surfaces `deactivated` status in `didDocumentMetadata`
-
-### DID Syntax
-
-```
-did:soul:<soul-specific-id>
+```sh
+npm test
 ```
 
-Where `<soul-specific-id>` is an identifier managed by the Soulverse platform.
+## Identifier format
 
-## Resolution Endpoint
-
-The driver proxies resolution requests to:
-
-```
-GET {SOULVERSE_BACKEND_ENDPOINT}/dids/{did}
-GET {SOULVERSE_BACKEND_ENDPOINT}/dids/{did}?version={version}
-```
-
-## Architecture
-
-```
-Universal Resolver → Driver → Soulverse Backend API → DID Document
-```
-
-### Source Components
-
-| File | Role |
-|---|---|
-| `src/main.ts` | Application entry point; binds NestJS app to the configured port |
-| `src/module.ts` | Root NestJS module; wires together HTTP client, config, controller, and services |
-| `src/controller/driver.controller.ts` | HTTP handler for `GET /1.0/identifiers/:did` |
-| `src/service/driver.service.ts` | Core resolution logic; validates the DID prefix and delegates to the backend |
-| `src/constant/constant.ts` | `BackendUrlService`; builds the backend URL (with optional version parameter) |
-| `src/dto/driver.dto.ts` | `ResolveDto`; typed input validation for DID and version |
-| `src/interface/interface.ts` | TypeScript interfaces for `DidResolutionResult` and `DidDocument` |
-| `src/utils/error-handling.ts` | Maps Axios HTTP errors to W3C DID error types |
-| `Dockerfile` | Container configuration for deployment |
-
-## Response Format
-
-### Successful Resolution
-
-```json
-{
-  "didDocument": {
-    "@context": [
-      "https://www.w3.org/ns/did/v1",
-      "https://w3id.org/security/suites/ed25519-2020/v1"
-    ],
-    "id": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
-    "controller": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
-    "verificationMethod": [
-      {
-        "id": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26#keys-1",
-        "type": "Ed25519VerificationKey2020",
-        "controller": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
-        "publicKeyMultibase": "z6Mkn8qNkxijhq1av1VVphNFe4ckdb53kh3RTYjjbJTigia1"
-      }
-    ],
-    "authentication": [
-      "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26#keys-1"
-    ],
-    "assertionMethod": [
-      "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26#keys-1"
-    ],
-    "created": "2026-06-26T10:17:54Z",
-    "updated": "2026-06-26T10:17:54Z"
-  },
-  "didResolutionMetadata": {
-    "driverDuration": 8081,
-    "contentType": "application/did",
-    "pattern": "^(did:soul:.+)$",
-    "driverUrl": "http://driver-did-soul:8080/1.0/identifiers/$1",
-    "duration": 8082,
-    "did": {
-      "didString": "did:soul:a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
-      "methodSpecificId": "a51eaff1-9bc4-4a76-9be7-1eaaaa4b1b26",
-      "method": "soul"
-    }
-  },
-  "didDocumentMetadata": {
-    "versionId": "1",
-    "deactivated": false,
-    "updated": "2026-06-26T10:17:55Z"
-  }
-}
-```
-
-### Error Responses
-
-| Error | Cause |
-|---|---|
-| `invalidDid` | DID does not start with `did:soul:`, or the backend returned HTTP 400 |
-| `notFound` | DID was not found in the registry (backend returned HTTP 404) |
-| `timeout` | The backend request timed out (`ECONNABORTED` / `ETIMEDOUT`) |
-| `internalError` | Any other unexpected error |
-
-```json
-{
-  "didDocument": null,
-  "didDocumentMetadata": {},
-  "didResolutionMetadata": {
-    "error": "notFound"
-  }
-}
-```
-
-## Integration Testing
-
-```bash
-# Start the driver
-npm run start:dev
-
-# Resolve a DID
-curl -X GET http://localhost:4000/1.0/identifiers/did:soul:<identifier>
-
-# Resolve a specific version
-curl -X GET "http://localhost:4000/1.0/identifiers/did:soul:<identifier>?version=1"
-```
-
-## Additional Resources
-
-- [W3C DID Core Specification](https://www.w3.org/TR/did-core/)
-- [Universal Resolver](https://github.com/decentralized-identity/universal-resolver)
+`did:soul:{scid}`, where the SCID is 46 base58 characters. There is no domain and no path.
+Anything else is rejected before a network call is made.

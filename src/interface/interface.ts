@@ -1,30 +1,16 @@
-export interface SoulverseResponse {
-  didDocument: any;
-  version: number;
-  deactivated: boolean;
-  updatedAt: string;
-}
-
-export interface DidDocument {
-  '@context'?: string[];
-  id: string;
-  verificationMethod?: unknown[];
-  authentication?: unknown[];
-  assertionMethod?: unknown[];
-  service?: unknown[];
-}
+export type ResolutionError =
+  | 'invalidDid'
+  | 'invalidDidDocument'
+  | 'notFound'
+  | 'deactivated'
+  | 'timeout'
+  | 'internalError';
 
 export interface DidResolutionResult {
-  statusCode?: number;
-  message?: string;
-  didDocument: DidDocument | null;
-  didDocumentMetadata: {
-    versionId?: string;
-    deactivated?: boolean;
-    updated?: string;
-  };
+  didDocument: Record<string, unknown> | null;
+  didDocumentMetadata: Record<string, unknown>;
   didResolutionMetadata: {
     contentType?: string;
-    error?: string;
+    error?: ResolutionError;
   };
 }

@@ -55,7 +55,7 @@ Historical versions work through `?versionId=`, `?versionNumber=` or `?versionTi
 ```sh
 npm install
 npm run build
-SOUL_REGISTRY_URL=https://registry.example.com node dist/main
+SOUL_REGISTRY_URL=https://did-stage.soulverse.us node dist/main
 ```
 
 ```sh
@@ -66,3 +66,10 @@ npm test
 
 `did:soul:{scid}`, where the SCID is 46 base58 characters. There is no domain and no path.
 Anything else is rejected before a network call is made.
+
+## Method documentation
+
+- [`docs/scheme.md`](docs/scheme.md) method specification
+- [`docs/privacy-security.md`](docs/privacy-security.md) security and privacy considerations
+- [`docs/PROPOSAL-did-soul.md`](docs/PROPOSAL-did-soul.md) DIF method recommendation proposal
+- [`docs/white-paper.md`](docs/white-paper.md) overview
